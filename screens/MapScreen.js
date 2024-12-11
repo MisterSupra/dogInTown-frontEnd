@@ -41,6 +41,9 @@ export default function MapScreen() {
   }, []);
 
   // FONCTION POUR TROUVER UN LIEU SUR L'API GOOGLE PLACE
+
+  // CAN ONLY SEARH ONCE FOR ME  >>>>>>>>>>>>> GAB
+  // DES FOIS NOMS ET ADRESSE DU PRECEDENT FETCH SUR LE PIN MAIS POSITION CORRECTE   !!!!!!!!!!!!!!!
   const searchPlace = async () => {
     if (!searchText.trim().length) return;
 
@@ -52,12 +55,14 @@ export default function MapScreen() {
       const response = await fetch(googleApiUrl);
       const data = await response.json();
 
+      
       if (data.status === 'OK' && data.results.length > 0) {
         const placeData = data.results[0]; // Obtenir juste le premier résultat (pour avoir seulement 1 lieu)
         setPlaces(placeData);  // enregistre la data du lieu recherché dans l'état places
         console.log(placeData);  // log des données pour voir la structure de la réponse
         setModalVisible(false);
         setSearchText('');
+        setFirstComment('');
       } else {
         console.log('Pas de résultats trouvé', data.status);
       }
@@ -95,15 +100,15 @@ export default function MapScreen() {
         <FontAwesome name='sliders' color='#525252' style={styles.icons} />
         <TextInput
           style={styles.recherches}
-          placeholder='Recherches'
+          placeholder='Rechercher'
           onChangeText={(value) => setRecherches(value)}
           value={recherches}
         />
-        <FontAwesome name='magnifying-glass' color='#525252' style={styles.icons} />
+        <FontAwesome name='search' color='#525252' style={styles.icons} />
       </View>
       {!modalVisible && <View style={styles.zoneBouton}>
         <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.boutonPatoune} activeOpacity={0.8}>
-          <Image style={styles.patte} source={require('../assets/Images/patte1.png')} />
+          <Image style={styles.patte} source={require('../assets/Images/Patoune5B1A10Empty.png')} />
         </TouchableOpacity>
       </View>}
       <Modal
@@ -207,11 +212,11 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F7CC99',
+ 
   },
   patte: {
-    height: 50,
-    width: 50,
+    height: 150,
+    width: 150,
   },
   /// STYLE MODAL AJOUT DE LIEU ////
   contenuModal: {

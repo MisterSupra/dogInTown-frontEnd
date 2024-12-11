@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { CameraView, Camera } from 'expo-camera';
 import {
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -13,12 +14,17 @@ import {
   Modal,
   SafeAreaView
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient'
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, logout } from '../reducers/user';
 import { Picker } from '@react-native-picker/picker';
 import { useIsFocused } from "@react-navigation/native";
+
+const DOG_SIZE_S= 'petit';
+const DOG_SIZE_M = 'moyen';
+const DOG_SIZE_L = 'grand';
 
 export default function DogSignUpScreen({ navigation }) {
 
@@ -52,7 +58,8 @@ export default function DogSignUpScreen({ navigation }) {
 	// Function to take a picture and save it to the reducer store
   const takePicture = async () => {
     const photo = await cameraRef.current?.takePictureAsync({ quality: 0.3 });
-    (photo)
+    (photo && console.log(photo.uri))
+    
   }
 
 
@@ -68,14 +75,15 @@ export default function DogSignUpScreen({ navigation }) {
   const handleDogSignup = async (dogRegister) => {
     if (!dogRegister) {
       navigation.navigate('TabNavigator');
-    } else {
-      const response = await fetch(`https://dog-in-town-backend.vercel.app/users/dog`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userToken: userToken, name: dogName, race: selectedRace, photo: photo, size: dogSize }),
-      })
-      navigation.navigate('TabNavigator');
+      return;
     }
+    
+    const response = await fetch(`https://dog-in-town-backend.vercel.app/users/dog`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userToken: userToken, name: dogName, race: selectedRace, photo: photo, size: dogSize }),
+    })
+    navigation.navigate('TabNavigator');
   }
 
   useEffect(() => {
@@ -88,18 +96,14 @@ export default function DogSignUpScreen({ navigation }) {
   if (!hasPermission || !isFocused) {
     return <View />;
   }
-
-  //Fonction pour sélectionner la taille du chien et changé la couleur de l'image selectionné
-  const handleDogSize = (size) => {
-    setDogSize(size);
-  }
+  
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.inner}>
+      <ScrollView style={styles.inner}>
         <View style={styles.upperContent}>
         <Modal
           animationType="fade"
@@ -108,32 +112,30 @@ export default function DogSignUpScreen({ navigation }) {
           onRequestClose={() => {
             setModalIsVisible(!modalIsVisible);
             }}>
-          <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-              <CameraView style={styles.camera} facing={facing} enableTorch={flashStatus} ref={(ref) => (cameraRef.current = ref)}>
-			          {/* Top container with the setting buttons */}
+              <View style={styles.centeredView}>
+                  <LinearGradient colors={['#8034eb', '#8034eb', '#8034eb', '#8034eb', '#ebcc34']} style={styles.modalView}>
+                     <CameraView style={styles.camera} facing={facing} enableTorch={flashStatus} ref={(ref) => (cameraRef.current = ref)}>
+	                   	<SafeAreaView style={styles.settingContainer}>
+	                   		<TouchableOpacity style={styles.settingButton} onPress={toggleFlashStatus}>
+	                   			<FontAwesome name="flash" size={25} color={flashStatus === true ? "#e8be4b" : "white"} />
+	                   		</TouchableOpacity>
+	                   		<TouchableOpacity style={styles.settingButton} onPress={toggleCameraFacing}>
+	                   			<FontAwesome name="rotate-right" size={25} color="white" />
+	                   		</TouchableOpacity>
+	                   	</SafeAreaView>
 
-	          		<SafeAreaView style={styles.settingContainer}>
-	          			<TouchableOpacity style={styles.settingButton} onPress={toggleFlashStatus}>
-	          				<FontAwesome name="flash" size={25} color={flashStatus === "on" ? "#e8be4b" : "white"} />
-	          			</TouchableOpacity>
-	          			<TouchableOpacity style={styles.settingButton} onPress={toggleCameraFacing}>
-	          				<FontAwesome name="rotate-right" size={25} color="white" />
-	          			</TouchableOpacity>
-	          		</SafeAreaView>
-
-	          		{/* Bottom container with the snap button */}
-	          		<View style={styles.snapContainer}>
-	          			<TouchableOpacity style={styles.snapButton} onPress={takePicture}>
-	          				<FontAwesome name="circle-thin" size={95} color="white" />
-	          			</TouchableOpacity>
-	          		</View>
-	          	</CameraView>
-                <TouchableOpacity style={styles.closeModal} onPress={() => setModalIsVisible(false)}>
-                  <FontAwesome name='times' size={40} color='#A23D42' />
-                </TouchableOpacity>
+	                   	{/* Bottom container with the snap button */}
+	                   	<View style={styles.snapContainer}>
+	                   		<TouchableOpacity style={styles.snapButton} onPress={takePicture}>
+	                   			<FontAwesome name="circle-thin" size={50} color="white" />
+	                   		</TouchableOpacity>
+	                   	</View>
+	                   </CameraView>
+                     <TouchableOpacity style={styles.closeModal} onPress={() => setModalIsVisible(false)}>
+                       <FontAwesome name='times' size={35} color="white" />
+                     </TouchableOpacity>
+                  </LinearGradient>
               </View>
-          </View>
         </Modal>
           <View style={styles.leaveContainer}>
             <Pressable onPress={() => handleDogSignup(false)}>
@@ -173,21 +175,21 @@ export default function DogSignUpScreen({ navigation }) {
             <Text style={styles.dogSizeText}>Taille:</Text>
           </View>
           <View style={styles.dogSizeCardContainer}>
-            <Pressable style={styles.dogSizeCard} onPress={() => handleDogSize('petit')}>
+            <Pressable style={styles.dogSizeCard} onPress={() => setDogSize(DOG_SIZE_S)}>
               <View style={styles.dogSizeCard}>
-                <Image style={styles.imageSmall} source={require('../assets/Images/petit.png')} />
+                <Image style={{maxHeight: 40, maxWidth: 40, tintColor: dogSize === DOG_SIZE_S ? "#F1AF5A" : "#5B1A10"}} source={require('../assets/Images/petit.png')} />
                 <Text>Petit</Text>
               </View>
             </Pressable>
-            <Pressable style={styles.dogSizeCard} onPress={() => handleDogSize('moyen')}>
+            <Pressable style={styles.dogSizeCard} onPress={() => setDogSize(DOG_SIZE_M)}>
               <View style={styles.dogSizeCard}>
-                <Image style={styles.imageMid} source={require('../assets/Images/moyen.png')} />
+                <Image style={{maxHeight: 50, maxWidth: 50, tintColor: dogSize === DOG_SIZE_M ? "#F1AF5A" : "#5B1A10"}} source={require('../assets/Images/moyen.png')} />
                 <Text>Moyen</Text>
               </View>
             </Pressable>
-            <Pressable style={styles.dogSizeCard} onPress={() => handleDogSize('grand')}>
+            <Pressable style={styles.dogSizeCard} onPress={() => setDogSize(DOG_SIZE_L)}>
               <View style={styles.dogSizeCard}>
-                <Image style={styles.imageBig} source={require('../assets/Images/grand.png')} />
+                <Image style={{maxHeight: 100, maxWidth: 100, tintColor: dogSize === DOG_SIZE_L ? "#F1AF5A" : "#5B1A10"}} source={require('../assets/Images/grand.png')} />
                 <Text>Grand</Text>
               </View>
             </Pressable>
@@ -205,7 +207,7 @@ export default function DogSignUpScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <StatusBar style="auto" />
-      </View>
+      </ScrollView >
     </KeyboardAvoidingView>
   );
 }
@@ -309,18 +311,6 @@ const styles = StyleSheet.create({
   dogSizeCard: {
     alignItems: 'center',
   },
-  imageSmall: {
-    maxHeight: 40,
-    maxWidth: 40,
-  },
-  imageMid: {
-    maxHeight: 50,
-    maxWidth: 50,
-  },
-  imageBig: {
-    maxHeight: 100,
-    maxWidth: 100,
-  },
   dogAvatar: {
     height: 150,
     width: 150,
@@ -343,6 +333,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   buttonText: {
+    textAlign: 'center',
     fontSize: 20,
     color: 'white',
     fontWeight: 700,
@@ -353,7 +344,6 @@ const styles = StyleSheet.create({
     // fontWeight: 600,
   },
   photoPressable: {
-    backgroundColor: 'red',
     width: '100%',
     height: '100%',
     borderRadius: 100,
@@ -371,13 +361,15 @@ const styles = StyleSheet.create({
     flex: 0,
     margin: 20,
     backgroundColor: 'white',
+    paddingBottom: 25,
+    borderColor: 'rgba(255, 255, 255, 1)',
     borderRadius: 20,
-    padding: 35,
-    height: '70%',
+    height: '60%',
     width: '90%',
     alignItems: 'center',
     justifyContent: 'space-between',
     shadowColor: '#000',
+    overflow: 'hidden',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -395,15 +387,17 @@ const styles = StyleSheet.create({
   },
   // Camera 
   camera: {
-    width: '100%',
-    height: '100%',
+    width: '120%',
+    aspectRatio: 1 / 1,
+    paddingTop: 5,
     justifyContent: "space-between",
+    overflow: 'hidden',
 	},
 	settingContainer: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		marginHorizontal: 20,
+		marginHorizontal: 40,
 	},
 	settingButton: {
 		width: 40,
@@ -421,7 +415,8 @@ const styles = StyleSheet.create({
 		width: 100,
 		aspectRatio: 1,
 		alignItems: "center",
-		justifyContent: "center",
+    justifyContent: "flex-end",
+    opacity: 0.8,
 	},
  
 });

@@ -121,7 +121,8 @@ export default function SignUpScreen({ navigation }) {
 				<Text style={styles.head}>Inscrivez-vous</Text>
 				<TextInput
 					placeholder="Username"
-					onChangeText={(value) => setUserName(value)}
+					autoFocus = {true}
+					onChangeText={(value) => setUserName(value.trim())}
 					value={username}
 					style={styles.input}
 				/>
@@ -137,6 +138,7 @@ export default function SignUpScreen({ navigation }) {
 					style={styles.input}
 				/>
 				<TextInput
+					secureTextEntry={true}
 					placeholder="Mot de passe"
 					autoCapitalize="none" // https://reactnative.dev/docs/textinput#autocapitalize
 					onChangeText={(value) => setPassword(value)}
@@ -145,6 +147,7 @@ export default function SignUpScreen({ navigation }) {
 					style={styles.input}
 				/>
 				<TextInput
+					secureTextEntry={true}
 					placeholder="Validation mot de passe"
 					autoCapitalize="none" // https://reactnative.dev/docs/textinput#autocapitalize
 					onChangeText={(value) => setPasswordVal(value)}
@@ -154,6 +157,9 @@ export default function SignUpScreen({ navigation }) {
 				/>
 				<TextInput
 					placeholder="Code postal"
+					maxLength="5"
+					keyboardType="numeric"
+					returnKeyType="done"
 					onChangeText={(value) => setPostCode(value)}
 					onBlur={() => postCodeCheck()}
 					value={postCode}
